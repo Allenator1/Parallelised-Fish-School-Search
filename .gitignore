@@ -1,3 +1,5 @@
 **/.vscode
 
 **/temp/**
+**/src/parallel_fss
+**/src/sequential_fss
