@@ -63,10 +63,24 @@ float shubert_function(float x, float y)
 }
 
 
-void check_bounds(float *x, float *y, int lake_size) 
+void check_bounds(float *x, float *y, float lake_size) 
 {
     if (*x < -lake_size/2) *x = -lake_size/2;
     if (*y < -lake_size/2) *y = -lake_size/2;
     if (*x > lake_size/2) *x = lake_size/2;
     if (*y > lake_size/2) *y = lake_size/2;
+}
+
+
+size_t get_cache_line_size(int cache) {
+    FILE * p = 0;
+    char line[256];
+    sprintf(line, "/sys/devices/system/cpu/cpu1/cache/index%d/coherency_line_size", cache);
+    p = fopen(line, "r");
+    unsigned int i = 0;
+    if (p) {
+        fscanf(p, "%d", &i);
+        fclose(p);
+    }
+    return i;
 }
