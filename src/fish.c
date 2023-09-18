@@ -9,9 +9,9 @@
 
 
 // random movement
-void swimfish(fish *f, float step_size, int lake_size) {
-    float new_x = f->x + rand_range(-1, 1) * step_size;
-    float new_y = f->y + rand_range(-1, 1) * step_size;
+void swimfish(fish *f, float rand_x, float rand_y, float step_size, int lake_size) {
+    float new_x = f->x + rand_x * step_size;
+    float new_y = f->y + rand_y * step_size;
     check_bounds(&new_x, &new_y, lake_size);
 
     float new_fitness = fitness_function(new_x, new_y);
