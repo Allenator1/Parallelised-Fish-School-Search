@@ -9,7 +9,7 @@ typedef struct {
     float delta_f;  // change in fitness between ith and i+1th iteration
 } fish;
 
-void swimfish(fish *f, float step_size, int lake_size);
+void swimfish(fish *f, float rand_x, float rand_y, float step_size, int lake_size);
 
 void feedfish(fish *f, float max_delta_f, float inital_wt);
 

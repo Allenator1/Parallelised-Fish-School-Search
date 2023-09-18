@@ -2,4 +2,5 @@
 
 **/temp/**
 **/src/parallel_fss
-**/src/sequential_fss
+**/src/parallel_fss_naive
+**/src/seq_fss
