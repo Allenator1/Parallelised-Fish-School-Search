@@ -11,13 +11,14 @@
 
 
 int main(int argc, char *argv[]) {
-    srand(0);
+    int seed = 0;
     int grid_size = 20;
-    int nt = 10;
-    int lake_size = 20;
+    int nt = 2;
+    int lake_size = LAKE_SIZE;
 
     fish *school = (fish*)malloc(NUM_FISH * sizeof(fish));
 
+    srand(seed);
     for (int i = 0; i < NUM_FISH; i++) {
         fish f = {
             .x = rand_range(-lake_size/2, lake_size/2),
@@ -38,7 +39,10 @@ int main(int argc, char *argv[]) {
         float max_delta_f = 0;
 #pragma omp parallel for num_threads(nt) reduction(max:max_delta_f)
         for (int j = 0; j < NUM_FISH; j++) {
-            swimfish(&school[j], STEP_IND, lake_size);
+            unsigned int randomState = seed + i + omp_get_thread_num();
+            float rand_x = ((float)rand_r(&randomState) / RAND_MAX * 2 - 1); // [-1, 1]
+            float rand_y = ((float)rand_r(&randomState) / RAND_MAX * 2 - 1); // [-1, 1]
+            swimfish(&school[j], rand_x, rand_y, STEP_IND, lake_size);
             if (school[j].delta_f > max_delta_f) {
                 max_delta_f = school[j].delta_f;
             }
