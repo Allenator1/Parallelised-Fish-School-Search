@@ -10,12 +10,13 @@
 
 
 int main(int argc, char *argv[]) {
-    srand(0);
+    int seed = 0;
     int grid_size = 20;
-    int lake_size = 20;
+    int lake_size = LAKE_SIZE;
 
     fish *school = (fish*)malloc(NUM_FISH * sizeof(fish));
 
+    srand(seed);
     for (int i = 0; i < NUM_FISH; i++) {
         fish f = {
             .x = rand_range(-lake_size/2, lake_size/2),
@@ -36,7 +37,9 @@ int main(int argc, char *argv[]) {
         // Random swimming by fish
         float max_delta_f = 0;
         for (int j = 0; j < NUM_FISH; j++) {
-            swimfish(&school[j], STEP_IND, lake_size);
+            float rand_x = ((float)rand() / RAND_MAX * 2 - 1); // [-1, 1]
+            float rand_y = ((float)rand() / RAND_MAX * 2 - 1); // [-1, 1]
+            swimfish(&school[j], rand_x, rand_y, STEP_IND, lake_size);
             if (school[j].delta_f > max_delta_f) {
                 max_delta_f = school[j].delta_f;
             }
@@ -59,7 +62,7 @@ int main(int argc, char *argv[]) {
         }
         float bari_x = sum_xwt / sum_wt;
         float bari_y = sum_ywt / sum_wt;
-        float bari = sqrt(bari_x * bari_x + bari_y * bari); // numerical placeholder for barycenter
+        float bari = sqrt(bari_x * bari_x + bari_y * bari_y); // numerical placeholder for barycenter
     }
 
     print_lake(school, grid_size, lake_size, NUM_FISH);
