@@ -48,14 +48,18 @@ int main(int argc, char *argv[]) {
         }
 
         // Calculate the barycenter as the weighed average of fish positions
-        float sum_f = 0; 
-        float sum_fwt = 0;  // sum of fitness * weight
+        float sum_wt = 0;
+        float sum_xwt = 0;      // sum of x * wt
+        float sum_ywt = 0;      // sum of y * wt
 
         for (int j = 0; j < NUM_FISH; j++) {
-            sum_f += school[j].fitness;
-            sum_fwt += school[j].wt * school[j].fitness;
+            sum_wt += school[j].wt;
+            sum_xwt += school[j].x + school[j].wt;
+            sum_ywt += school[j].y + school[j].wt;
         }
-        float bari = sum_fwt / sum_f;
+        float bari_x = sum_xwt / sum_wt;
+        float bari_y = sum_ywt / sum_wt;
+        float bari = sqrt(bari_x * bari_x + bari_y * bari); // numerical placeholder for barycenter
     }
 
     print_lake(school, grid_size, lake_size, NUM_FISH);

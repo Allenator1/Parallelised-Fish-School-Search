@@ -51,15 +51,19 @@ int main(int argc, char *argv[]) {
         }
 
         // Calculate the barycenter as the weighed average of fish positions
-        float sum_f = 0; 
-        float sum_fwt = 0;  // sum of fitness * weight
+        float sum_wt = 0;
+        float sum_xwt = 0;      // sum of x * wt
+        float sum_ywt = 0;      // sum of y * wt
 
-#pragma omp parallel for num_threads(nt) reduction(+:sum_f, sum_fwt) 
+#pragma omp parallel for num_threads(nt) reduction(+:sum_wt, sum_xwt, sum_ywt) 
         for (int j = 0; j < NUM_FISH; j++) {
-            sum_f += school[j].fitness;
-            sum_fwt += school[j].wt * school[j].fitness;
+            sum_wt += school[j].wt;
+            sum_xwt += school[j].x + school[j].wt;
+            sum_ywt += school[j].y + school[j].wt;
         }
-        float bari = sum_fwt / sum_f;
+        float bari_x = sum_xwt / sum_wt;
+        float bari_y = sum_ywt / sum_wt;
+        float bari = sqrt(bari_x * bari_x + bari_y * bari); // numerical placeholder for barycenter
     }
 
     print_lake(school, grid_size, lake_size, NUM_FISH);
@@ -67,4 +71,5 @@ int main(int argc, char *argv[]) {
     double delta_time = omp_get_wtime() - start_time;
     printf("\nTime taken: %f seconds\n", delta_time);
 
-    free(school);}
+    free(school);
+}
