@@ -9,20 +9,25 @@
 #include "../include/fish.h"
 #include "../include/constants.h"
 
+unsigned int randomState;
+#pragma omp threadprivate(randomState)
 
 int main(int argc, char *argv[]) {
-    int seed = 0;
-    int grid_size = 20;
-    int nt = 2;
-    int lake_size = LAKE_SIZE;
+    int seed = SEED;
+    int lake_w = LAKE_SIZE;
+    struct Args args = {.nthreads=6, .nfish=NUM_FISH, .nrounds=NUM_ITERATIONS, 
+        .verbose=false, .gui_grid_size=20};
+    parse_args(argc, argv, &args);
 
-    fish *school = (fish*)malloc(NUM_FISH * sizeof(fish));
+    fish *school = (fish*)malloc(args.nfish * sizeof(fish));
 
     srand(seed);
-    for (int i = 0; i < NUM_FISH; i++) {
+    omp_set_num_threads(args.nthreads);
+
+    for (int i = 0; i < args.nfish; i++) {
         fish f = {
-            .x = rand_range(-lake_size/2, lake_size/2),
-            .y = rand_range(-lake_size/2, lake_size/2),
+            .x = rand_range(-lake_w/2, lake_w/2),
+            .y = rand_range(-lake_w/2, lake_w/2),
             .wt = INITIAL_WT,
             .delta_f = 0
         };
@@ -30,27 +35,31 @@ int main(int argc, char *argv[]) {
         school[i] = f;
     }
 
-    print_lake(school, grid_size, lake_size, NUM_FISH);
-
+    if (args.verbose) print_lake(school, args.gui_grid_size, lake_w, args.nfish);
     double start_time = omp_get_wtime();
 
-    for (int i = 0; i < NUM_ITERATIONS; i++) {
-        // Random swimming by fish
+#pragma omp parallel shared(seed)
+{
+    randomState = seed + omp_get_thread_num();  // initialise random number generator for each thread
+}
+
+    for (int i = 0; i < args.nrounds; i++) {
         float max_delta_f = 0;
-#pragma omp parallel for num_threads(nt) reduction(max:max_delta_f)
-        for (int j = 0; j < NUM_FISH; j++) {
-            unsigned int randomState = seed + i + omp_get_thread_num();
+
+        // Random swimming by fish
+#pragma omp parallel for reduction(max:max_delta_f)
+        for (int j = 0; j < args.nfish; j++) {
             float rand_x = ((float)rand_r(&randomState) / RAND_MAX * 2 - 1); // [-1, 1]
             float rand_y = ((float)rand_r(&randomState) / RAND_MAX * 2 - 1); // [-1, 1]
-            swimfish(&school[j], rand_x, rand_y, STEP_IND, lake_size);
+            swimfish(&school[j], rand_x, rand_y, STEP_IND, lake_w);
             if (school[j].delta_f > max_delta_f) {
                 max_delta_f = school[j].delta_f;
             }
         }
 
         // Feeding 
-#pragma omp parallel for num_threads(nt)
-        for (int j = 0; j < NUM_FISH; j++) {
+#pragma omp parallel for
+        for (int j = 0; j < args.nfish; j++) {
             feedfish(&school[j], max_delta_f, INITIAL_WT);
         }
 
@@ -59,8 +68,8 @@ int main(int argc, char *argv[]) {
         float sum_xwt = 0;      // sum of x * wt
         float sum_ywt = 0;      // sum of y * wt
 
-#pragma omp parallel for num_threads(nt) reduction(+:sum_wt, sum_xwt, sum_ywt) 
-        for (int j = 0; j < NUM_FISH; j++) {
+#pragma omp parallel for reduction(+:sum_wt, sum_xwt, sum_ywt) 
+        for (int j = 0; j < args.nfish; j++) {
             sum_wt += school[j].wt;
             sum_xwt += school[j].x + school[j].wt;
             sum_ywt += school[j].y + school[j].wt;
@@ -70,10 +79,8 @@ int main(int argc, char *argv[]) {
         float bari = sqrt(bari_x * bari_x + bari_y * bari); // numerical placeholder for barycenter
     }
 
-    print_lake(school, grid_size, lake_size, NUM_FISH);
-
+    if (args.verbose) print_lake(school, args.gui_grid_size, lake_w, args.nfish);
     double delta_time = omp_get_wtime() - start_time;
     printf("\nTime taken: %f seconds\n", delta_time);
-
     free(school);
 }

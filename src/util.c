@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <getopt.h>
+#include <math.h>
 #include "../include/util.h"
 
 
@@ -83,4 +86,28 @@ size_t get_cache_line_size(int cache) {
         fclose(p);
     }
     return i;
+}
+
+
+void parse_args(int argc, char **argv, struct Args* args) {
+    int opt;
+    while ((opt = getopt(argc, argv, "t:n:r:s:c:vg:"))!= -1) {
+        switch (opt) {
+            case 't': 
+                args->nthreads = atoi(optarg); break;
+            case 'n': 
+                args->nfish = atoi(optarg); break;
+            case 'r': 
+                args->nrounds = atoi(optarg); break;
+            case 's': 
+                args->schedule = atoi(optarg); break;
+            case 'c': 
+                args->chunk_size = atoi(optarg); break;
+            case 'v': 
+                args->verbose = true; break;
+            case 'g': 
+                args->gui_grid_size = atoi(optarg); break;
+            default: break;
+        }
+    }
 }
