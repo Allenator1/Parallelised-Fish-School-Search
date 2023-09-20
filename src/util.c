@@ -2,21 +2,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 #include <unistd.h>
 #include <getopt.h>
-#include <math.h>
 #include "../include/util.h"
 
 
-float rand_range(float min_n, float max_n) 
+float fitness_function(float x, float y, int fn) 
 {
-    return (float)rand() / RAND_MAX * (max_n - min_n) + min_n;
-}
-
-
-float fitness_function(float x, float y) 
-{
-    return (float)sqrt(x * x + y * y);
+    if (fn == EUCLIDEAN) {
+        return (float)sqrt(x * x + y * y);
+    } 
+    else if (fn == SHUBERT) {
+        return shubert_function(x, y);
+    }
+    else if (fn == RASTRIGIN) {
+        return rastrigin_function(x, y);
+    }
+    else {
+        return -1;
+    }
 }
 
 
@@ -66,6 +71,13 @@ float shubert_function(float x, float y)
 }
 
 
+float rastrigin_function(float x, float y) {
+    float x_com = x * x - 10 * cos(2 * M_PI * x);
+    float y_com = y * y - 10 * cos(2 * M_PI * y);
+    return 20 + x_com + y_com;
+}
+
+
 void check_bounds(float *x, float *y, float lake_size) 
 {
     if (*x < -lake_size/2) *x = -lake_size/2;
@@ -91,7 +103,7 @@ size_t get_cache_line_size(int cache) {
 
 void parse_args(int argc, char **argv, struct Args* args) {
     int opt;
-    while ((opt = getopt(argc, argv, "t:n:r:s:c:vg:"))!= -1) {
+    while ((opt = getopt(argc, argv, "t:n:r:s:c:vg:f:"))!= -1) {
         switch (opt) {
             case 't': 
                 args->nthreads = atoi(optarg); break;
@@ -107,6 +119,8 @@ void parse_args(int argc, char **argv, struct Args* args) {
                 args->verbose = true; break;
             case 'g': 
                 args->gui_grid_size = atoi(optarg); break;
+            case 'f':
+                args->fitness_fn = atoi(optarg); break;
             default: break;
         }
     }

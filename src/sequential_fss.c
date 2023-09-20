@@ -10,23 +10,22 @@
 
 
 int main(int argc, char *argv[]) {
-    int seed = 0;
-    int lake_w = LAKE_SIZE;
     struct Args args = {.nfish=NUM_FISH, .nrounds=NUM_ITERATIONS, 
-        .verbose=false, .gui_grid_size=20};
-    parse_args(argc, argv, &args);
+        .verbose=false, .gui_grid_size=20, .fitness_fn=EUCLIDEAN};
+    float lake_w = EUCLIDEAN_DOMAIN_WIDTH;
+    if (args.fitness_fn == SHUBERT) {
+        lake_w = SHUBERT_DOMAIN_WIDTH;
+    } else if (args.fitness_fn == RASTRIGIN) {
+        lake_w = RASTRIGIN_DOMAIN_WIDTH;
+    }
 
+    parse_args(argc, argv, &args);
     fish *school = (fish*)malloc(args.nfish * sizeof(fish));
 
-    srand(seed);
+    unsigned int randState = SEED;
     for (int i = 0; i < args.nfish; i++) {
-        fish f = {
-            .x = rand_range(-lake_w/2, lake_w/2),
-            .y = rand_range(-lake_w/2, lake_w/2),
-            .wt = INITIAL_WT,
-            .delta_f = 0
-        };
-        f.fitness = fitness_function(f.x, f.y);
+        fish f;
+        init_fish(&f, &randState, lake_w, args.fitness_fn);
         school[i] = f;
     }
 
@@ -39,17 +38,15 @@ int main(int argc, char *argv[]) {
         // Random swimming by fish
         float max_delta_f = 0;
         for (int j = 0; j < args.nfish; j++) {
-            float rand_x = ((float)rand() / RAND_MAX * 2 - 1); // [-1, 1]
-            float rand_y = ((float)rand() / RAND_MAX * 2 - 1); // [-1, 1]
-            swimfish(&school[j], rand_x, rand_y, STEP_IND, lake_w);
-            if (school[j].delta_f > max_delta_f) {
-                max_delta_f = school[j].delta_f;
+            swimfish(&school[j], &randState, lake_w, args.fitness_fn);
+            if (abs(school[j].delta_f) > max_delta_f) {
+                max_delta_f = abs(school[j].delta_f);
             }
         }
 
         // Feeding fish
         for (int j = 0; j < args.nfish; j++) {
-            feedfish(&school[j], max_delta_f, INITIAL_WT);
+            feedfish(&school[j], max_delta_f);
         }
 
         // Calculate the barycenter as the weighed average of fish positions
