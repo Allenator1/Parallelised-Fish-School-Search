@@ -6,22 +6,29 @@
 #include <unistd.h>
 #include <getopt.h>
 #include "../include/util.h"
+#include "../include/constants.h"
 
 
 float fitness_function(float x, float y, int fn) 
 {
+    float ret_val = 0.0f;
     if (fn == EUCLIDEAN) {
-        return (float)sqrt(x * x + y * y);
+        ret_val = dist(x, y, 0.0, 0.0);
     } 
     else if (fn == SHUBERT) {
-        return shubert_function(x, y);
+        ret_val = shubert_function(x, y);
     }
     else if (fn == RASTRIGIN) {
-        return rastrigin_function(x, y);
+        ret_val = rastrigin_function(x, y);
     }
     else {
         return -1;
     }
+
+    if (MINIMISE_FITNESS_FN) {
+        ret_val = 1 / ret_val;
+    }
+    return ret_val;
 }
 
 
@@ -56,6 +63,10 @@ void quantiles(int *data, int n, int *qs)
     qs[3] = qs[2] + 1.5 * iqr;                  // upper tail
 
     free(sorted_data);
+}
+
+float dist(float x1, float y1, float x2, float y2) {
+    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
 

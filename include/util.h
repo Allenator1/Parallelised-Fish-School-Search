@@ -22,6 +22,8 @@ int median(int *data, int n);
 
 void quantiles(int *data, int n, int *qs);
 
+float dist(float x1, float y1, float x2, float y2);
+
 float shubert_function(float x, float y);
 
 float rastrigin_function(float x, float y);
