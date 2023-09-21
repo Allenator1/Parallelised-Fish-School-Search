@@ -3,7 +3,7 @@
 
 #define SEED 0
 #define NUM_ITERATIONS 5000
-#define NUM_FISH 1000
+#define NUM_FISH 10000
 #define STEP_IND 0.1
 #define STEP_VOL 0.1
 #define INITIAL_WT 10
