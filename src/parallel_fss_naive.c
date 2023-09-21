@@ -12,15 +12,21 @@
 unsigned int randState;
 #pragma omp threadprivate(randState)
 
+float lake_width;
+int number_of_fish;
+int fitness_fn_type;
+
 int main(int argc, char *argv[]) {
     struct Args args = {.nthreads=6, .nfish=NUM_FISH, .nrounds=NUM_ITERATIONS, 
         .verbose=false, .gui_grid_size=20, .fitness_fn=EUCLIDEAN};
-    float lake_w = EUCLIDEAN_DOMAIN_WIDTH;
+    lake_width = EUCLIDEAN_DOMAIN_WIDTH;
     if (args.fitness_fn == SHUBERT) {
-        lake_w = SHUBERT_DOMAIN_WIDTH;
+        lake_width = SHUBERT_DOMAIN_WIDTH;
     } else if (args.fitness_fn == RASTRIGIN) {
-        lake_w = RASTRIGIN_DOMAIN_WIDTH;
+        lake_width = RASTRIGIN_DOMAIN_WIDTH;
     }
+    number_of_fish = args.nfish;
+    fitness_fn_type = args.fitness_fn;
 
     parse_args(argc, argv, &args);
     fish *school = (fish*)malloc(args.nfish * sizeof(fish));
@@ -33,10 +39,10 @@ int main(int argc, char *argv[]) {
     // Initialise the fish school
     for (int i = 0; i < args.nfish; i++) {
         fish f;
-        init_fish(&f, &randState, lake_w, args.fitness_fn);
+        init_fish(&f, &randState);
         school[i] = f;
     }
-    if (args.verbose) print_lake(school, args.gui_grid_size, lake_w, args.nfish);
+    if (args.verbose) print_lake(school, args.gui_grid_size);
     double start_time = omp_get_wtime();
 
     // Run the simulation
@@ -46,9 +52,9 @@ int main(int argc, char *argv[]) {
 #pragma omp parallel for reduction(max:max_delta_f)
         // Random swimming by fish
         for (int j = 0; j < args.nfish; j++) {
-            swimfish(&school[j], &randState, lake_w, args.fitness_fn);
-            if (abs(school[j].delta_f) > max_delta_f) {
-                max_delta_f = abs(school[j].delta_f);
+            swimfish(&school[j], &randState, STEP_IND);
+            if (abs(school[j].df) > max_delta_f) {
+                max_delta_f = abs(school[j].df);
             }
         }
 
@@ -74,7 +80,7 @@ int main(int argc, char *argv[]) {
         float bari = sqrt(bari_x * bari_x + bari_y * bari); // numerical placeholder for barycenter
     }
 
-    if (args.verbose) print_lake(school, args.gui_grid_size, lake_w, args.nfish);
+    if (args.verbose) print_lake(school, args.gui_grid_size);
     double delta_time = omp_get_wtime() - start_time;
     printf("\nTime taken: %f seconds\n", delta_time);
     free(school);

@@ -16,7 +16,7 @@ struct Args {
 
 enum objective_fns {EUCLIDEAN = 1, SHUBERT = 2, RASTRIGIN = 3};
 
-float fitness_function(float x, float y, int fn);
+float fitness_function(float x, float y);
 
 int median(int *data, int n);
 
@@ -28,7 +28,7 @@ float shubert_function(float x, float y);
 
 float rastrigin_function(float x, float y);
 
-void check_bounds(float *x, float *y, float lake_size);
+void check_bounds(float *x, float *y);
 
 size_t get_cache_line_size(int cache);
 

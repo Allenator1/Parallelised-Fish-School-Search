@@ -9,24 +9,20 @@
 #include "../include/constants.h"
 
 
-float fitness_function(float x, float y, int fn) 
+float fitness_function(float x, float y) 
 {
     float ret_val = 0.0f;
-    if (fn == EUCLIDEAN) {
+    if (fitness_fn_type == EUCLIDEAN) {
         ret_val = dist(x, y, 0.0, 0.0);
     } 
-    else if (fn == SHUBERT) {
+    else if (fitness_fn_type == SHUBERT) {
         ret_val = shubert_function(x, y);
     }
-    else if (fn == RASTRIGIN) {
+    else if (fitness_fn_type == RASTRIGIN) {
         ret_val = rastrigin_function(x, y);
     }
     else {
         return -1;
-    }
-
-    if (MINIMISE_FITNESS_FN) {
-        ret_val = 1 / ret_val;
     }
     return ret_val;
 }
@@ -89,12 +85,12 @@ float rastrigin_function(float x, float y) {
 }
 
 
-void check_bounds(float *x, float *y, float lake_size) 
+void check_bounds(float *x, float *y) 
 {
-    if (*x < -lake_size/2) *x = -lake_size/2;
-    if (*y < -lake_size/2) *y = -lake_size/2;
-    if (*x > lake_size/2) *x = lake_size/2;
-    if (*y > lake_size/2) *y = lake_size/2;
+    if (*x < -lake_width/2) *x = -lake_width/2;
+    if (*y < -lake_width/2) *y = -lake_width/2;
+    if (*x > lake_width/2) *x = lake_width/2;
+    if (*y > lake_width/2) *y = lake_width/2;
 }
 
 
@@ -123,7 +119,7 @@ void parse_args(int argc, char **argv, struct Args* args) {
             case 'r': 
                 args->nrounds = atoi(optarg); break;
             case 's': 
-                args->schedule = atoi(optarg); break;
+                args->schedule = atoi(optarg); break;       // 1: static, 2: dynamic, 3: dynamic, 4: auto
             case 'c': 
                 args->chunk_size = atoi(optarg); break;
             case 'v': 
