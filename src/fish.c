@@ -9,49 +9,86 @@
 #include "../include/constants.h"
 
 
-void init_fish(fish *f, unsigned int* randState, float lake_w, int fitness_fn) {
-    f->x = (float)rand_r(randState) / RAND_MAX * (lake_w) - lake_w / 2;
-    f->y = (float)rand_r(randState) / RAND_MAX * (lake_w) - lake_w / 2;
-    f->wt = INITIAL_WT;
-    f->delta_f = 0;
-    f->fitness = fitness_function(f->x, f->y, fitness_fn);
+float rand_range(float min, float max, unsigned int* randState) {
+    return (float)rand_r(randState) / RAND_MAX * (max - min) + min;
 }
 
 
-// random movement
-void swimfish(fish *f, unsigned int* randState, float lake_w, int fitness_fn) {
-    float new_x = f->x + ((float)rand_r(randState) / RAND_MAX * 2 - 1) * STEP_IND;
-    float new_y = f->y + ((float)rand_r(randState) / RAND_MAX * 2 - 1) * STEP_IND;
-    check_bounds(&new_x, &new_y, lake_w);
+// initialise the fish with random parameters
+void init_fish(fish *f, unsigned int* randState) {
+    f->x = rand_range(-lake_width / 2, lake_width / 2, randState);
+    f->y = rand_range(-lake_width / 2, lake_width / 2, randState);
+    f->wt = INITIAL_WT;
+    f->df = 0;
+    f->dx = 0;
+    f->dy = 0;
+    f->moved = false;
+}
 
-    float new_fitness = fitness_function(new_x, new_y, fitness_fn);
-    float delta_f = new_fitness - f->fitness;
+
+// random individual movement of the fish
+void swimfish(fish *f, unsigned int* randState, float step_ind) {
+    float new_x = f->x + rand_range(-1, 1, randState) * step_ind;
+    float new_y = f->y + rand_range(-1, 1, randState) * step_ind;
+    check_bounds(&new_x, &new_y);
+    float delta_f = fitness_function(new_x, new_y) - fitness_function(f->x, f->y);
+    if (MINIMISE_FITNESS_FN) delta_f = -delta_f;
     
     if (delta_f > 0) {
+        f->dx = new_x - f->x;
         f->x = new_x;
+        f->dy = new_y - f->y;
         f->y = new_y;
-        f->fitness = new_fitness;
-        f->delta_f = delta_f;
+        f->df = delta_f;
+        f->moved = true;
     } else {
-        f->delta_f = 0;
+        f->moved = false;
+        f->df = 0;
+        f->dx = 0;
+        f->dy = 0;
     }
 }
 
+// movement of the fish dependent on the school
+void collective_move(fish *f, unsigned int* randState, float xI, float yI, float xB, float yB, bool school_weight_improved, float step_vol) {
+    if (isnan(xI) || isnan(yI) || isnan(xB) || isnan(yB)) return;
 
-// gain weight after swimming
+    // instinctive movement
+    float new_x = f->x + xI;
+    float new_y = f->y + yI;
+    check_bounds(&new_x, &new_y);
+
+    // volitive movement
+    float dist2barycenter = dist(f->x, f->y, xB, yB);
+    float xV = step_vol * rand_range(-1, 1, randState) * (f->x - xB) / dist2barycenter;
+    float yV = step_vol * rand_range(-1, 1, randState) * (f->y - yB) / dist2barycenter;
+    if (school_weight_improved) {
+        xV = -xV;
+        yV = -yV;
+    }
+    new_x += xV;
+    new_y += yV;
+    check_bounds(&new_x, &new_y);
+
+    f->x = new_x;
+    f->y = new_y;
+}
+
+
+// weight gain after random movement of the fish
 void feedfish(fish *f, float max_delta_f) {
-    float new_wt = f->wt + f->delta_f / max_delta_f;
+    float new_wt = f->wt + f->df / max_delta_f;
     f->wt = new_wt < 2 * INITIAL_WT? new_wt : 2 * INITIAL_WT;
 }
 
 
-void print_lake(fish *school, int grid_width, float lake_w, int num_fish) {
+void print_lake(fish *school, int grid_width) {
     int num_grid = grid_width * grid_width;
     int *occupancy = calloc(num_grid, sizeof(int));
 
-    for (int i = 0; i < num_fish; i++) {
-        int grid_x = round( (school[i].x + lake_w / 2) / lake_w * (grid_width - 1) );
-        int grid_y = round( (school[i].y + lake_w / 2) / lake_w * (grid_width - 1) );
+    for (int i = 0; i < number_of_fish; i++) {
+        int grid_x = round( (school[i].x + lake_width / 2) / lake_width * (grid_width - 1) );
+        int grid_y = round( (school[i].y + lake_width / 2) / lake_width * (grid_width - 1) );
         occupancy[grid_y * grid_width + grid_x] += 1;
     }
 
