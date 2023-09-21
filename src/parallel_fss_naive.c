@@ -19,6 +19,8 @@ int fitness_fn_type;
 int main(int argc, char *argv[]) {
     struct Args args = {.nthreads=6, .nfish=NUM_FISH, .nrounds=NUM_ITERATIONS, 
         .verbose=false, .gui_grid_size=20, .fitness_fn=EUCLIDEAN};
+    parse_args(argc, argv, &args);
+
     lake_width = EUCLIDEAN_DOMAIN_WIDTH;
     if (args.fitness_fn == SHUBERT) {
         lake_width = SHUBERT_DOMAIN_WIDTH;
@@ -27,9 +29,8 @@ int main(int argc, char *argv[]) {
     }
     number_of_fish = args.nfish;
     fitness_fn_type = args.fitness_fn;
+    fish *school = (fish*)malloc(number_of_fish * sizeof(fish));
 
-    parse_args(argc, argv, &args);
-    fish *school = (fish*)malloc(args.nfish * sizeof(fish));
     omp_set_num_threads(args.nthreads);
 
 #pragma omp parallel
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]) {
     randState = SEED + omp_get_thread_num();  // initialise random number generator for each thread
 }   
     // Initialise the fish school
-    for (int i = 0; i < args.nfish; i++) {
+    for (int i = 0; i < number_of_fish; i++) {
         fish f;
         init_fish(&f, &randState);
         school[i] = f;
@@ -51,7 +52,7 @@ int main(int argc, char *argv[]) {
 
 #pragma omp parallel for reduction(max:max_delta_f)
         // Random swimming by fish
-        for (int j = 0; j < args.nfish; j++) {
+        for (int j = 0; j < number_of_fish; j++) {
             swimfish(&school[j], &randState, STEP_IND);
             if (abs(school[j].df) > max_delta_f) {
                 max_delta_f = abs(school[j].df);
@@ -60,7 +61,7 @@ int main(int argc, char *argv[]) {
 
 #pragma omp parallel for
         // Feeding 
-        for (int j = 0; j < args.nfish; j++) {
+        for (int j = 0; j < number_of_fish; j++) {
             feedfish(&school[j], max_delta_f);
         }
 
@@ -70,7 +71,7 @@ int main(int argc, char *argv[]) {
         float sum_ywt = 0;      // sum of y * wt
 
 #pragma omp parallel for reduction(+:sum_wt, sum_xwt, sum_ywt) 
-        for (int j = 0; j < args.nfish; j++) {
+        for (int j = 0; j < number_of_fish; j++) {
             sum_wt += school[j].wt;
             sum_xwt += school[j].x + school[j].wt;
             sum_ywt += school[j].y + school[j].wt;
