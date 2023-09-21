@@ -8,28 +8,33 @@
 #include "../include/fish.h"
 #include "../include/constants.h"
 
+float lake_width;
+int number_of_fish;
+int fitness_fn_type;
 
 int main(int argc, char *argv[]) {
     struct Args args = {.nfish=NUM_FISH, .nrounds=NUM_ITERATIONS, 
         .verbose=false, .gui_grid_size=20, .fitness_fn=EUCLIDEAN};
-    float lake_w = EUCLIDEAN_DOMAIN_WIDTH;
-    if (args.fitness_fn == SHUBERT) {
-        lake_w = SHUBERT_DOMAIN_WIDTH;
-    } else if (args.fitness_fn == RASTRIGIN) {
-        lake_w = RASTRIGIN_DOMAIN_WIDTH;
-    }
-
     parse_args(argc, argv, &args);
+
+    lake_width = EUCLIDEAN_DOMAIN_WIDTH;
+    if (args.fitness_fn == SHUBERT) {
+        lake_width = SHUBERT_DOMAIN_WIDTH;
+    } else if (args.fitness_fn == RASTRIGIN) {
+        lake_width = RASTRIGIN_DOMAIN_WIDTH;
+    }
+    number_of_fish = args.nfish;
+    fitness_fn_type = args.fitness_fn;
     fish *school = (fish*)malloc(args.nfish * sizeof(fish));
 
     unsigned int randState = SEED;
     for (int i = 0; i < args.nfish; i++) {
         fish f;
-        init_fish(&f, &randState, lake_w, args.fitness_fn);
+        init_fish(&f, &randState);
         school[i] = f;
     }
 
-    if (args.verbose) print_lake(school, args.gui_grid_size, lake_w, args.nfish);
+    if (args.verbose) print_lake(school, args.gui_grid_size);
 
     clock_t t;
     t = clock();
@@ -38,9 +43,9 @@ int main(int argc, char *argv[]) {
         // Random swimming by fish
         float max_delta_f = 0;
         for (int j = 0; j < args.nfish; j++) {
-            swimfish(&school[j], &randState, lake_w, args.fitness_fn);
-            if (abs(school[j].delta_f) > max_delta_f) {
-                max_delta_f = abs(school[j].delta_f);
+            swimfish(&school[j], &randState, STEP_IND);
+            if (abs(school[j].df) > max_delta_f) {
+                max_delta_f = abs(school[j].df);
             }
         }
 
@@ -64,7 +69,7 @@ int main(int argc, char *argv[]) {
         float bari = sqrt(bari_x * bari_x + bari_y * bari_y); // numerical placeholder for barycenter
     }
 
-    if (args.verbose) print_lake(school, args.gui_grid_size, lake_w, args.nfish);
+    if (args.verbose) print_lake(school, args.gui_grid_size);
 
     float delta_t =  (float)(clock() - t) / CLOCKS_PER_SEC;
     printf("\nTime taken: %f seconds\n", delta_t);

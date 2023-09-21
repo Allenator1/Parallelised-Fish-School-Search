@@ -9,49 +9,49 @@
 #include "../include/constants.h"
 
 
-void init_fish(fish *f, unsigned int* randState, float lake_w, int fitness_fn) {
-    f->x = (float)rand_r(randState) / RAND_MAX * (lake_w) - lake_w / 2;
-    f->y = (float)rand_r(randState) / RAND_MAX * (lake_w) - lake_w / 2;
+void init_fish(fish *f, unsigned int* randState) {
+    f->x = (float)rand_r(randState) / RAND_MAX * (lake_width) - lake_width / 2;
+    f->y = (float)rand_r(randState) / RAND_MAX * (lake_width) - lake_width / 2;
     f->wt = INITIAL_WT;
-    f->delta_f = 0;
-    f->fitness = fitness_function(f->x, f->y, fitness_fn);
+    f->df = 0;
+    f->fitness = fitness_function(f->x, f->y);
 }
 
 
 // random movement
-void swimfish(fish *f, unsigned int* randState, float lake_w, int fitness_fn) {
-    float new_x = f->x + ((float)rand_r(randState) / RAND_MAX * 2 - 1) * STEP_IND;
-    float new_y = f->y + ((float)rand_r(randState) / RAND_MAX * 2 - 1) * STEP_IND;
-    check_bounds(&new_x, &new_y, lake_w);
+void swimfish(fish *f, unsigned int* randState, float step_ind) {
+    float new_x = f->x + ((float)rand_r(randState) / RAND_MAX * 2 - 1) * step_ind;
+    float new_y = f->y + ((float)rand_r(randState) / RAND_MAX * 2 - 1) * step_ind;
+    check_bounds(&new_x, &new_y);
 
-    float new_fitness = fitness_function(new_x, new_y, fitness_fn);
+    float new_fitness = fitness_function(new_x, new_y);
     float delta_f = new_fitness - f->fitness;
     
     if (delta_f > 0) {
         f->x = new_x;
         f->y = new_y;
         f->fitness = new_fitness;
-        f->delta_f = delta_f;
+        f->df = delta_f;
     } else {
-        f->delta_f = 0;
+        f->df = 0;
     }
 }
 
 
 // gain weight after swimming
 void feedfish(fish *f, float max_delta_f) {
-    float new_wt = f->wt + f->delta_f / max_delta_f;
+    float new_wt = f->wt + f->df / max_delta_f;
     f->wt = new_wt < 2 * INITIAL_WT? new_wt : 2 * INITIAL_WT;
 }
 
 
-void print_lake(fish *school, int grid_width, float lake_w, int num_fish) {
+void print_lake(fish *school, int grid_width) {
     int num_grid = grid_width * grid_width;
     int *occupancy = calloc(num_grid, sizeof(int));
 
-    for (int i = 0; i < num_fish; i++) {
-        int grid_x = round( (school[i].x + lake_w / 2) / lake_w * (grid_width - 1) );
-        int grid_y = round( (school[i].y + lake_w / 2) / lake_w * (grid_width - 1) );
+    for (int i = 0; i < number_of_fish; i++) {
+        int grid_x = round( (school[i].x + lake_width / 2) / lake_width * (grid_width - 1) );
+        int grid_y = round( (school[i].y + lake_width / 2) / lake_width * (grid_width - 1) );
         occupancy[grid_y * grid_width + grid_x] += 1;
     }
 

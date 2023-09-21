@@ -6,15 +6,15 @@ typedef struct {
     float y;
     float wt;          
     float fitness;  
-    float delta_f;  // change in fitness between ith and i+1th iteration
+    float df;  // change in fitness between ith and i+1th iteration
 } fish;
 
-void swimfish(fish *f, unsigned int* randState, float lake_size, int fitness_fn);
+void swimfish(fish *f, unsigned int* randState, float step_ind);
 
-void init_fish(fish *f, unsigned int* randState, float lake_size, int fitness_fn);
+void init_fish(fish *f, unsigned int* randState);
 
 void feedfish(fish *f, float max_delta_f);
 
-void print_lake(fish *school, int grid_size, float lake_size, int num_fish);
+void print_lake(fish *school, int grid_size);
 
 #endif
