@@ -54,8 +54,8 @@ int main(int argc, char *argv[]) {
         // Random swimming by fish
         for (int j = 0; j < number_of_fish; j++) {
             swimfish(&school[j], &randState, STEP_IND);
-            if (abs(school[j].df) > max_delta_f) {
-                max_delta_f = abs(school[j].df);
+            if (school[j].df > max_delta_f) {
+                max_delta_f = school[j].df;
             }
         }
 
@@ -83,6 +83,6 @@ int main(int argc, char *argv[]) {
 
     if (args.verbose) print_lake(school, args.gui_grid_size);
     double delta_time = omp_get_wtime() - start_time;
-    printf("\nTime taken: %f seconds\n", delta_time);
+    printf("%f\n", delta_time);
     free(school);
 }
