@@ -128,7 +128,11 @@ void parse_args(int argc, char **argv, struct Args* args) {
                 args->gui_grid_size = atoi(optarg); break;
             case 'f':
                 args->fitness_fn = atoi(optarg); break;
-            default: break;
+            default: 
+                fprintf(stderr, "Usage: [-t NUM THREADS] [-n NUM FISHES] [-r NUM ROUNDS] \
+                    [-s SCHEDULE] [-c CHUNK SIZE] [-v DISPLAY GUI] [-g GUI GRID SIZE] \
+                    [-f FITNESS FUNCTION");
+                exit(EXIT_FAILURE);
         }
     }
 }

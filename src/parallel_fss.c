@@ -54,14 +54,14 @@ int main(int argc, char *argv[]) {
         float sum_xwt = 0;      // sum of x * wt
         float sum_ywt = 0;      // sum of y * wt
 
-#pragma omp parallel shared(school, max_delta_f, sum_wt, sum_xwt, sum_ywt)
+#pragma omp parallel
 {
 #pragma omp for schedule(runtime) reduction(max:max_delta_f)
         // Random swimming by fish
         for (int j = 0; j < number_of_fish; j++) {
             swimfish(&school[j], &randState, STEP_IND);
-            if (abs(school[j].df) > max_delta_f) {
-                max_delta_f = abs(school[j].df);
+            if (school[j].df > max_delta_f) {
+                max_delta_f = school[j].df;
             }
         }
 
@@ -86,6 +86,6 @@ int main(int argc, char *argv[]) {
 
     if (args.verbose) print_lake(school, args.gui_grid_size);
     double delta_time = omp_get_wtime() - start_time;
-    printf("\nTime taken: %f seconds\n", delta_time);
+    printf("%f\n", delta_time);
     free(school);
 }

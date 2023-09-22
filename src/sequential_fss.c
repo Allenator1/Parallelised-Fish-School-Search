@@ -44,8 +44,8 @@ int main(int argc, char *argv[]) {
         float max_delta_f = 0;
         for (int j = 0; j < args.nfish; j++) {
             swimfish(&school[j], &randState, STEP_IND);
-            if (abs(school[j].df) > max_delta_f) {
-                max_delta_f = abs(school[j].df);
+            if (school[j].df > max_delta_f) {
+                max_delta_f = school[j].df;
             }
         }
 
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     if (args.verbose) print_lake(school, args.gui_grid_size);
 
     float delta_t =  (float)(clock() - t) / CLOCKS_PER_SEC;
-    printf("\nTime taken: %f seconds\n", delta_t);
+    printf("%f\n", delta_t);
 
     free(school);
 }
