@@ -6,6 +6,8 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --time=00:30:00
 
+module load gcc
+
 cd ../src/
 make all
 cd ../test/
