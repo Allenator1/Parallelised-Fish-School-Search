@@ -7,9 +7,7 @@ typedef struct {
     float dx;
     float dy;
     float wt;          
-    float fitness;  
     float df;       // change in fitness after random movement
-    bool moved;     // true if fish moved to new position after random movement
 } fish;
 
 void swimfish(fish *f, unsigned int* randState, float step_ind);

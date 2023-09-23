@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
         // Apply feeding operator
         float prev_school_weight = school_weight;
         for (int j = 0; j < number_of_fish; j++) {
-            if (!school[j].moved) continue;
+            if (school[j].df < 0) continue;
             feedfish(&school[j], max_delta_f);
             school_weight += school[j].wt;
         }
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
         float sum_df = 0;
 
         for (int j = 0; j < number_of_fish; j++) {
-            if (!school[j].moved) continue;
+            if (school[j].df < 0) continue;
             sum_dxdf += school[j].dx * school[j].df;
             sum_dydf += school[j].dy * school[j].df;
             sum_df += school[j].df;
@@ -94,7 +94,6 @@ int main(int argc, char *argv[]) {
             collective_move(&school[j], &randState, xI, yI, xB, yB, school_weight_improved, step_vol);
         }
 
-        step_ind -= step_ind / (args.nrounds + 1);
         step_vol -= step_vol / (args.nrounds + 1);
     }
 

@@ -19,10 +19,9 @@ void init_fish(fish *f, unsigned int* randState) {
     f->x = rand_range(-lake_width / 2, lake_width / 2, randState);
     f->y = rand_range(-lake_width / 2, lake_width / 2, randState);
     f->wt = INITIAL_WT;
-    f->df = 0;
+    f->df = -1;
     f->dx = 0;
     f->dy = 0;
-    f->moved = false;
 }
 
 
@@ -34,18 +33,12 @@ void swimfish(fish *f, unsigned int* randState, float step_ind) {
     float delta_f = fitness_function(new_x, new_y) - fitness_function(f->x, f->y);
     if (MINIMISE_FITNESS_FN) delta_f = -delta_f;
     
-    if (delta_f > 0) {
+    if (delta_f >= 0) {
         f->dx = new_x - f->x;
         f->x = new_x;
         f->dy = new_y - f->y;
         f->y = new_y;
         f->df = delta_f;
-        f->moved = true;
-    } else {
-        f->moved = false;
-        f->df = 0;
-        f->dx = 0;
-        f->dy = 0;
     }
 }
 
@@ -60,8 +53,8 @@ void collective_move(fish *f, unsigned int* randState, float xI, float yI, float
 
     // volitive movement
     float dist2barycenter = dist(f->x, f->y, xB, yB);
-    float xV = step_vol * rand_range(-1, 1, randState) * (f->x - xB) / dist2barycenter;
-    float yV = step_vol * rand_range(-1, 1, randState) * (f->y - yB) / dist2barycenter;
+    float xV = step_vol * rand_range(0, 1, randState) * (f->x - xB) / dist2barycenter;
+    float yV = step_vol * rand_range(0, 1, randState) * (f->y - yB) / dist2barycenter;
     if (school_weight_improved) {
         xV = -xV;
         yV = -yV;
