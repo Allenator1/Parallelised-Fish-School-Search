@@ -41,17 +41,17 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < args.nrounds; i++) {
         // Random swimming by fish
-        float max_delta_f = 0;
+        float max_df = 0;
         for (int j = 0; j < args.nfish; j++) {
             swimfish(&school[j], &randState, STEP_IND);
-            if (school[j].df > max_delta_f) {
-                max_delta_f = school[j].df;
+            if (school[j].df > max_df) {
+                max_df = school[j].df;
             }
         }
 
         // Feeding fish
         for (int j = 0; j < args.nfish; j++) {
-            feedfish(&school[j], max_delta_f);
+            feedfish(&school[j], max_df);
         }
 
         // Calculate the barycenter as the weighed average of fish positions
@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
 
         for (int j = 0; j < args.nfish; j++) {
             sum_wt += school[j].wt;
-            sum_xwt += school[j].x + school[j].wt;
-            sum_ywt += school[j].y + school[j].wt;
+            sum_xwt += school[j].x * school[j].wt;
+            sum_ywt += school[j].y * school[j].wt;
         }
         float bari_x = sum_xwt / sum_wt;
         float bari_y = sum_ywt / sum_wt;
