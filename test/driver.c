@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     char* resfile_path = NULL;
     char* logfile_path = NULL;
     bool test_schedules = false;
-    int program = 0;
+    int program = 1;
     int opt;
 
     while((opt = getopt(argc, argv, "f:l:p:s")) != -1) {
@@ -63,15 +63,16 @@ int main(int argc, char *argv[]) {
 
     if (program == 1) {
         test_sequential_fss(logfile, resfile);
-    }
-
-    else if (program == 2) {
+    } else if (program == 2) {
         if (test_schedules) {
             test_parallel_schedules(logfile, resfile);
         }
         else {
             test_parallel_fss(logfile, resfile);
         }
+    } else {
+        fprintf(stderr, "Please enter a valid program. Usage: [-p PROGRAM]\n");
+        exit(EXIT_FAILURE);
     }
 
     fclose(resfile);
@@ -82,7 +83,7 @@ int main(int argc, char *argv[]) {
 void test_sequential_fss(FILE *logfile, FILE *resfile) {
     fprintf(resfile, "Num.Fish,Num.Rounds,Fitness.Function,Execution.Time\n");
 
-    for (int n_p = 4; n_p <= 17; n_p++) {
+    for (int n_p = 4; n_p <= 18; n_p++) {
         int n = pow(2, n_p);
         printf("NUMBER OF FISHES: %d\n", n);
         int num_iters = 0;
@@ -112,7 +113,7 @@ void test_parallel_fss(FILE *logfile, FILE *resfile) {
     fprintf(resfile, "Num.Threads,Num.Fish,Num.Rounds,Schedule,Num.Chunks,Fitness.Function,Execution.Time\n");
     int nt_max = omp_get_max_threads();
 
-    for (int n_p = 4; n_p <= 17; n_p++) {
+    for (int n_p = 4; n_p <= 18; n_p++) {
         int n = pow(2, n_p);
         printf("NUMBER OF FISHES: %d\n", n);
         int num_iters = 0;
@@ -147,15 +148,16 @@ void test_parallel_schedules(FILE *logfile, FILE *resfile) {
     fprintf(resfile, "Num.Threads,Num.Fish,Num.Rounds,Schedule,Num.Chunks,Fitness.Function,Execution.Time\n");
     int nt = omp_get_max_threads();
     int n = pow(2, 17);
-    int chunk_step = (n / nt - MIN_CHUNK_SIZE) / CHUNK_SIZE_NUM_STEPS;
+    int max_chunk_size = n / nt;
+    int chunk_step = (max_chunk_size - MIN_CHUNK_SIZE) / CHUNK_SIZE_NUM_STEPS;
     int num_iters = 0;
     int num_iters_total =  3 * 4 * CHUNK_SIZE_NUM_STEPS * NUM_REPEATS;
 
     for (int f = 1; f <= 3; f++) {
 
-        for (int s = 1; s <= 4; s++) {
+        for (int s = 1; s <= 3; s++) {
 
-            for (int c = MIN_CHUNK_SIZE; c <= n / nt; c += chunk_step) {
+            for (int c = MIN_CHUNK_SIZE; c <= max_chunk_size; c += chunk_step) {
                 float exec_time_avg = 0;
 
                 for (int i = 0; i < NUM_REPEATS; i++) {
