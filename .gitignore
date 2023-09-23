@@ -6,3 +6,4 @@
 **/src/seq_fss
 **/test/driver
 **/test/*.csv
+**/test/*log.txt
