@@ -83,8 +83,8 @@ int main(int argc, char *argv[]) {
 
         for (int j = 0; j < number_of_fish; j++) {
             sum_wt += school[j].wt;
-            sum_xwt += school[j].x + school[j].wt;
-            sum_ywt += school[j].y + school[j].wt;
+            sum_xwt += school[j].x * school[j].wt;
+            sum_ywt += school[j].y * school[j].wt;
         }
         float xB = sum_xwt / sum_wt;   
         float yB = sum_ywt / sum_wt;
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
     if (args.verbose) print_lake(school, args.gui_grid_size);
 
     float delta_t =  (float)(clock() - t) / CLOCKS_PER_SEC;
-    printf("\nTime taken: %f seconds\n", delta_t);
+    printf("%f\n", delta_t);
 
     free(school);
 }
