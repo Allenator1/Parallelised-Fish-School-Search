@@ -25,13 +25,13 @@ void swimfish(fish *f, unsigned int* randState, float step_ind) {
     check_bounds(&new_x, &new_y);
 
     float new_fitness = fitness_function(new_x, new_y);
-    float delta_f = new_fitness - f->fitness;
+    float df = new_fitness - f->fitness;
     
-    if (delta_f > 0) {
+    if (df > 0) {
         f->x = new_x;
         f->y = new_y;
         f->fitness = new_fitness;
-        f->df = delta_f;
+        f->df = df;
     } else {
         f->df = 0;
     }
@@ -39,8 +39,8 @@ void swimfish(fish *f, unsigned int* randState, float step_ind) {
 
 
 // gain weight after swimming
-void feedfish(fish *f, float max_delta_f) {
-    float new_wt = f->wt + f->df / max_delta_f;
+void feedfish(fish *f, float max_df) {
+    float new_wt = f->wt + f->df / max_df;
     f->wt = new_wt < 2 * INITIAL_WT? new_wt : 2 * INITIAL_WT;
 }
 
