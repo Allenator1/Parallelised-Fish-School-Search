@@ -13,8 +13,7 @@
 
 #define NUM_THREADS_MIN 2
 
-#define MIN_CHUNK_SIZE 1
-#define CHUNK_SIZE_NUM_STEPS 10
+#define CHUNK_SIZE_NUM_STEPS 8  // Must be a power of 2
 
 #define NUM_REPEATS 10
 
@@ -148,35 +147,36 @@ void test_parallel_fss(FILE *logfile, FILE *resfile) {
 
 void test_parallel_schedules(FILE *logfile, FILE *resfile) {
     fprintf(resfile, "Num.Threads,Num.Fish,Num.Rounds,Schedule,Num.Chunks,Fitness.Function,Execution.Time\n");
-    int nt = omp_get_max_threads();
+    int max_nt = omp_get_max_threads();
+    double closest_pow_2 = floor(log2(max_nt));
+    int nt = pow(2, closest_pow_2);
     int n = pow(2, 17);
     int max_chunk_size = n / nt;
-    int chunk_step = (max_chunk_size - MIN_CHUNK_SIZE) / CHUNK_SIZE_NUM_STEPS;
+    int chunk_step = max_chunk_size / CHUNK_SIZE_NUM_STEPS;
     int num_iters = 0;
-    int num_iters_total =  3 * 4 * CHUNK_SIZE_NUM_STEPS * NUM_REPEATS;
+    int num_iters_total =  3 * 3 * CHUNK_SIZE_NUM_STEPS * NUM_REPEATS;
+    int f = 1;
 
-    for (int f = 1; f <= 3; f++) {
+    for (int s = 1; s <= 4; s++) {
 
-        for (int s = 1; s <= 3; s++) {
+        for (int c = chunk_step; c <= max_chunk_size; c += chunk_step) {
+            float exec_time_avg = 0;
 
-            for (int c = MIN_CHUNK_SIZE; c <= max_chunk_size; c += chunk_step) {
-                float exec_time_avg = 0;
+            for (int i = 0; i < NUM_REPEATS; i++) {
+                char cmdline[1000];
+                sprintf(cmdline, "../src/parallel_fss -t%d -n%d -r%d -s%d -c%d -f%d", 
+                        nt, n, NROUNDS, s, c, f);
+                exec_time_avg += exec_program(logfile, cmdline, n, NROUNDS, f);
+                num_iters++;
 
-                for (int i = 0; i < NUM_REPEATS; i++) {
-                    char cmdline[1000];
-                    sprintf(cmdline, "../src/parallel_fss -t%d -n%d -r%d -s%d -c%d -f%d", 
-                            nt, n, NROUNDS, s, c, f);
-                    exec_time_avg += exec_program(logfile, cmdline, n, NROUNDS, f);
-                    num_iters++;
-
-                    int bar_progress = (float)num_iters / num_iters_total  * 77;
-                    printf("[%s]\r", &bar[77 - (int)bar_progress]);
-                    fflush(stdout);
-                }
-                exec_time_avg /= NUM_REPEATS;
-                fprintf(resfile, "%d,%d,%d,%d,%d,%d,%f\n", nt, n, NROUNDS, s, c, f, exec_time_avg);
-
+                int bar_progress = (float)num_iters / num_iters_total  * 77;
+                printf("[%s]\r", &bar[77 - (int)bar_progress]);
+                fflush(stdout);
             }
+            exec_time_avg /= NUM_REPEATS;
+            fprintf(resfile, "%d,%d,%d,%d,%d,%d,%f\n", nt, n, NROUNDS, s, c, f, exec_time_avg);
+
+            if (s == 4) break;  // run only once for 'automatic' schedule
         }
     }
     printf("\n");
