@@ -10,6 +10,7 @@ _OBJ = fish.o util.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
+	mkdir -p . $(ODIR)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 all: seq_fss parallel_fss
