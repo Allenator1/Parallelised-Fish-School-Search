@@ -8,10 +8,7 @@
 
 module load gcc
 
-cd ../src/
-make all
-cd ../test/
-make driver
+gcc -fopenmp -lm driver.c -o driver
 
 srun ./driver -f seq_pawsey.csv -p 1
 srun ./driver -f parallel_pawsey.csv -p 2

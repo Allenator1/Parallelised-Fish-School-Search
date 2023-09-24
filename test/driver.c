@@ -63,14 +63,16 @@ int main(int argc, char *argv[]) {
 
     if (program == 1) {
         test_sequential_fss(logfile, resfile);
-    } else if (program == 2) {
+    } 
+    else if (program == 2) {
         if (test_schedules) {
             test_parallel_schedules(logfile, resfile);
         }
         else {
             test_parallel_fss(logfile, resfile);
         }
-    } else {
+    } 
+    else {
         fprintf(stderr, "Please enter a valid program. Usage: [-p PROGRAM]\n");
         exit(EXIT_FAILURE);
     }
