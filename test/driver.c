@@ -11,10 +11,7 @@
 
 #define NROUNDS 500
 
-#define NUM_THREADS_MIN 2
-
-#define CHUNK_SIZE_NUM_STEPS 8  // Must be a power of 2
-
+#define MAX_THREAD_STEPS 8
 #define NUM_REPEATS 10
 
 static char bar[] = "======================================="
@@ -113,16 +110,20 @@ void test_sequential_fss(FILE *logfile, FILE *resfile) {
 void test_parallel_fss(FILE *logfile, FILE *resfile) {
     fprintf(resfile, "Num.Threads,Num.Fish,Num.Rounds,Schedule,Num.Chunks,Fitness.Function,Execution.Time\n");
     int nt_max = omp_get_max_threads();
+    int t_step = 1;
+    if (nt_max >= MAX_THREAD_STEPS) {
+        t_step = nt_max / MAX_THREAD_STEPS;
+    }
 
     for (int n_p = 4; n_p <= 18; n_p++) {
         int n = pow(2, n_p);
         printf("NUMBER OF FISHES: %d\n", n);
         int num_iters = 0;
-        int num_iters_total =  3 * (nt_max - NUM_THREADS_MIN + 1) * NUM_REPEATS;
+        int num_iters_total =  3 * (nt_max / t_step) * NUM_REPEATS;
 
         for (int f = 1; f <= 3; f++) {
 
-            for (int nt = NUM_THREADS_MIN; nt <= nt_max; nt++) {
+            for (int nt = t_step; nt <= nt_max; nt += t_step) {
                 float exec_time_avg = 0;
 
                 for (int i = 0; i < NUM_REPEATS; i++) {
@@ -151,21 +152,21 @@ void test_parallel_schedules(FILE *logfile, FILE *resfile) {
     double closest_pow_2 = floor(log2(max_nt));
     int nt = pow(2, closest_pow_2);
     int n = pow(2, 17);
-    int max_chunk_size = n / nt;
-    int chunk_step = max_chunk_size / CHUNK_SIZE_NUM_STEPS;
+    int max_chunk_pow = 17 - (int)closest_pow_2;
     int num_iters = 0;
-    int num_iters_total =  3 * 3 * CHUNK_SIZE_NUM_STEPS * NUM_REPEATS;
+    int num_iters_total =  4 * (max_chunk_pow - 2 + 1) * NUM_REPEATS;
     int f = 1;
 
     for (int s = 1; s <= 4; s++) {
 
-        for (int c = chunk_step; c <= max_chunk_size; c += chunk_step) {
+        for (int c = 2; c <= max_chunk_pow; c++) {
+            int chunk_size = pow(2, c);
             float exec_time_avg = 0;
 
             for (int i = 0; i < NUM_REPEATS; i++) {
                 char cmdline[1000];
                 sprintf(cmdline, "../src/parallel_fss -t%d -n%d -r%d -s%d -c%d -f%d", 
-                        nt, n, NROUNDS, s, c, f);
+                        nt, n, NROUNDS, s, chunk_size, f);
                 exec_time_avg += exec_program(logfile, cmdline, n, NROUNDS, f);
                 num_iters++;
 
@@ -174,7 +175,7 @@ void test_parallel_schedules(FILE *logfile, FILE *resfile) {
                 fflush(stdout);
             }
             exec_time_avg /= NUM_REPEATS;
-            fprintf(resfile, "%d,%d,%d,%d,%d,%d,%f\n", nt, n, NROUNDS, s, c, f, exec_time_avg);
+            fprintf(resfile, "%d,%d,%d,%d,%d,%d,%f\n", nt, n, NROUNDS, s, chunk_size, f, exec_time_avg);
 
             if (s == 4) break;  // run only once for 'automatic' schedule
         }
