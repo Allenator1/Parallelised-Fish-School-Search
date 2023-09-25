@@ -159,7 +159,7 @@ void test_parallel_schedules(FILE *logfile, FILE *resfile) {
 
     for (int s = 1; s <= 4; s++) {
 
-        for (int c = 2; c <= max_chunk_pow; c++) {
+        for (int c = 1; c <= max_chunk_pow; c++) {
             int chunk_size = pow(2, c);
             float exec_time_avg = 0;
 
