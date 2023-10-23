@@ -1,6 +1,6 @@
 IDIR = ../include
 ODIR = ../temp
-CC = gcc
+CC = mpicc
 CFLAGS = -I$(IDIR) -Wall -fopenmp -lm
 
 _DEPS = fish.h util.h constants.h
@@ -13,13 +13,16 @@ $(ODIR)/%.o: %.c $(DEPS)
 	mkdir -p . $(ODIR)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-all: seq_fss parallel_fss
+all: seq_fss parallel_fss mpi_communication
 
 seq_fss: $(OBJ) $(ODIR)/sequential_fss.o
 	$(CC) -o $@ $^ $(CFLAGS) 
 
 parallel_fss: $(OBJ) $(ODIR)/parallel_fss.o
 	$(CC) -o $@ $^ $(CFLAGS) 
+
+mpi_communication: $(OBJ) $(ODIR)/mpi_communication.o
+	$(CC) -o $@ $^ $(CFLAGS)
 
 .PHONY: clean
 
