@@ -14,6 +14,5 @@
 
 extern float lake_width;
 extern int fitness_fn_type;
-extern int number_of_fish;
 
 #endif
