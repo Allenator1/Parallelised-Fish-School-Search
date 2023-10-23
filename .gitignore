@@ -4,6 +4,7 @@
 **/src/parallel_fss
 **/src/parallel_fss_naive
 **/src/seq_fss
+**/src/mpi_communication
 **/test/driver
 **/test/*.csv
 **/test/*log.txt
