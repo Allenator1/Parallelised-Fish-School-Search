@@ -9,7 +9,6 @@
 #include "../include/constants.h"
 
 float lake_width;
-int number_of_fish;
 int fitness_fn_type;
 
 int main(int argc, char *argv[]) {
@@ -23,7 +22,6 @@ int main(int argc, char *argv[]) {
     } else if (args.fitness_fn == RASTRIGIN) {
         lake_width = RASTRIGIN_DOMAIN_WIDTH;
     }
-    number_of_fish = args.nfish;
     fitness_fn_type = args.fitness_fn;
     fish *school = (fish*)malloc(args.nfish * sizeof(fish));
 
@@ -33,8 +31,6 @@ int main(int argc, char *argv[]) {
         init_fish(&f, &randState);
         school[i] = f;
     }
-
-    if (args.verbose) print_lake(school, args.gui_grid_size);
 
     clock_t t;
     t = clock();
@@ -69,7 +65,7 @@ int main(int argc, char *argv[]) {
         float bari = sqrt(bari_x * bari_x + bari_y * bari_y); // numerical placeholder for barycenter
     }
 
-    if (args.verbose) print_lake(school, args.gui_grid_size);
+    if (args.verbose) print_lake(school, args.gui_grid_size, args.nfish);
 
     float delta_t =  (float)(clock() - t) / CLOCKS_PER_SEC;
     printf("%f\n", delta_t);
