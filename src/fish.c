@@ -45,11 +45,11 @@ void feedfish(fish *f, float max_df) {
 }
 
 
-void print_lake(fish *school, int grid_width) {
+void print_lake(fish *school, int grid_width, int nfish) {
     int num_grid = grid_width * grid_width;
     int *occupancy = calloc(num_grid, sizeof(int));
 
-    for (int i = 0; i < number_of_fish; i++) {
+    for (int i = 0; i < nfish; i++) {
         int grid_x = round( (school[i].x + lake_width / 2) / lake_width * (grid_width - 1) );
         int grid_y = round( (school[i].y + lake_width / 2) / lake_width * (grid_width - 1) );
         occupancy[grid_y * grid_width + grid_x] += 1;

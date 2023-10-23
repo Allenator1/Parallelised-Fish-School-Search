@@ -15,6 +15,6 @@ void init_fish(fish *f, unsigned int* randState);
 
 void feedfish(fish *f, float max_delta_f);
 
-void print_lake(fish *school, int grid_size);
+void print_lake(fish *school, int grid_size, int nfish);
 
 #endif
