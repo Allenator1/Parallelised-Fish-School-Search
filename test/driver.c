@@ -133,7 +133,7 @@ void test_parallel_fss(FILE *logfile, FILE *resfile, int max_np) {
 
                 for (int i = 0; i < NUM_REPEATS; i++) {
                     char cmdline[1000];
-                    sprintf(cmdline, "mpirun --with-slurm -np %d ./src/parallel_fss -t%d -n%d -r%d -f%d", 
+                    sprintf(cmdline, "mpirun --with-slurm -np %d src/parallel_fss -t%d -n%d -r%d -f%d", 
                             np, nt, n, NROUNDS, f);
                     exec_time_avg += exec_program(logfile, cmdline, n, NROUNDS, f);
                     num_iters++;
@@ -171,7 +171,7 @@ void test_parallel_schedules(FILE *logfile, FILE *resfile, int max_np) {
 
                 for (int i = 0; i < NUM_REPEATS; i++) {
                     char cmdline[1000];
-                    sprintf(cmdline, "mpirun --with-slurm -np %d ../src/parallel_fss -t%d -n%d -r%d -s%d -c%d -f%d", 
+                    sprintf(cmdline, "mpirun --with-slurm -np %d src/parallel_fss -t%d -n%d -r%d -s%d -c%d -f%d", 
                             np, nt, n, NROUNDS, s, chunk_size, f);
                     exec_time_avg += exec_program(logfile, cmdline, n, NROUNDS, f);
                     num_iters++;

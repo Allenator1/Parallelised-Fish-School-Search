@@ -31,7 +31,6 @@ int main(int argc, char *argv[]) {
     MPI_Type_contiguous(5, MPI_FLOAT, &mpi_fish_type);
     MPI_Type_commit(&mpi_fish_type);
 
-    // Seed the random number generator uniquely for each process and thread
 	double start_time = omp_get_wtime();
 
     int nfish_local = NUM_FISH / num_processes;
@@ -86,17 +85,13 @@ int main(int argc, char *argv[]) {
 			for (int i = 0; i < NUM_FISH; i++) {
 				fprintf(fp2, "%f %f %f %f %f\n", all_fish[i].x, all_fish[i].y, all_fish[i].wt, all_fish[i].fitness, all_fish[i].df);
 			}
+            printf("%f\n", omp_get_wtime() - start_time);
+            
             free(all_fish);
             free(fish_counts);
             free(fish_offsets);
         }
     free(school);
-
-    // Print the time taken to run the program
-    if (rank == 0) {
-        double delta_time = omp_get_wtime() - start_time;
-        printf("%f\n", delta_time);
-    }
 
     MPI_Finalize();
     return 0;

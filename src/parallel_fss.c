@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
     if (rank < remainder) {
         nfish_local++;
     }
+    
     fish *school = (fish*)malloc(nfish_local * sizeof(fish));
     double start_time = omp_get_wtime();
 
@@ -75,6 +76,7 @@ int main(int argc, char *argv[]) {
         }
 
 #pragma omp parallel for schedule(runtime)
+        // Generate all fish at root process (rank = 0)
         for (int i = 0; i < args.nfish; i++) {
             fish f;
             init_fish(&f, &randState);
@@ -82,21 +84,14 @@ int main(int argc, char *argv[]) {
         } 
     }
 
+    // Scatter fish to all processes
     MPI_Scatterv(all_fish, fish_counts, fish_offsets, mpi_fish_type, 
                  school, nfish_local, mpi_fish_type, 0, MPI_COMM_WORLD);    
 
-
-#pragma omp parallel for schedule(runtime)
-    for (int i = 0; i < nfish_local; i++) {
-        fish f;
-        init_fish(&f, &randState);
-        school[i] = f;
-    }
-
-    float max_df; 
-    float sum_wt; 
-    float sum_xwt; 
-    float sum_ywt;
+    float max_df = 0; 
+    float sum_wt = 0; 
+    float sum_xwt = 0; 
+    float sum_ywt = 0;
 
 #pragma omp parallel shared(max_df, sum_wt, sum_xwt, sum_ywt)
 {   
@@ -152,17 +147,13 @@ int main(int argc, char *argv[]) {
 
         if (rank == 0) { 
             if (args.verbose) print_lake(all_fish, args.gui_grid_size, args.nfish);
+            printf("%f\n", omp_get_wtime() - start_time);
+
             free(all_fish);
             free(fish_counts);
             free(fish_offsets);
         }
     free(school);
-
-    // Print the time taken to run the program
-    if (rank == 0) {
-        double delta_time = omp_get_wtime() - start_time;
-        printf("%f\n", delta_time);
-    }
 
     MPI_Finalize();
     return 0;
